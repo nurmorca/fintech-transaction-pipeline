@@ -1,0 +1,35 @@
+services: # creates the services we need which are: rabbitmq and postgres
+  rabbitmq:
+    image: rabbitmq:3.13-management #management gives us the web ui for rabbitmq
+    container_name: rabbitmq
+    restart: always #if container ever crashes it will be automatically restarted thanks to this
+    ports:
+      - "5672:5672" # actual rabbitmq port
+      - "15672:15672" # port for web ui
+    environment:
+      RABBITMQ_DEFAULT_USER: morca #credentials here
+      RABBITMQ_DEFAULT_PASS: morca
+    volumes: # volumes to keep data in the disk. this survives containet ups and close downs. 
+      - rabbitmq-lib:/var/lib/rabbitmq/
+      - rabbitmq-log:/var/log/rabbitmq
+
+  postgres: # same goes for postgres
+    image: postgres:16
+    container_name: postgres
+    restart: always
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: morca
+      POSTGRES_PASSWORD: morca
+      POSTGRES_DB: transactions_db
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+
+volumes: #declaring the volumes we referenced above
+  rabbitmq-lib:
+    driver: local
+  rabbitmq-log:
+    driver: local
+  postgres-data:
+    driver: local
