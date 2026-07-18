@@ -14,6 +14,8 @@ import lombok.Setter;
 public class Transaction {
 
     public static final String STATUS_PENDING = "PENDING";
+    public static final String STATUS_FRAUD_FLAGGED = "FRAUD_FLAGGED";
+    public static final String STATUS_FRAUD_CHECK_PASSED = "FRAUD_CHECK_PASSED";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

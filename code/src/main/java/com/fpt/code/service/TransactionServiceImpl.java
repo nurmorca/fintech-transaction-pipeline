@@ -48,7 +48,16 @@ public class TransactionServiceImpl implements TransactionService {
                 saved.getAmount()
         );
 
-        template.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.ROUTING_KEY, event);
+        template.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.TRANSACTION_INITIATED_KEY, event);
+        return null;
+    }
+
+    @Override
+    public Transaction getTransaction(Long id) {
+        Optional<Transaction> transaction = repo.findById(id);
+        if (transaction.isPresent()) {
+            return transaction.get();
+        }
         return null;
     }
 

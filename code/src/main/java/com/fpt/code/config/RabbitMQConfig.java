@@ -14,8 +14,13 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class RabbitMQConfig {
     public static final String EXCHANGE = "transactions.exchange";
-    public static final String QUEUE = "transaction.initiated.queue";
-    public static final String ROUTING_KEY = "transaction.initiated";
+    public static final String TRANSACTION_INITIATED_QUEUE = "transaction.initiated.queue";
+    public static final String TRANSACTION_INITIATED_KEY = "transaction.initiated";
+    public static final String FRAUD_CHECK_FAILED_KEY = "fraud.check.failed";
+    public static final String FRAUD_CHECK_FAILED_QUEUE = "fraud.check.failed.queue";
+    public static final String FRAUD_CHECK_PASSED_KEY = "fraud.check.passed";
+    public static final String FRAUD_CHECK_PASSED_QUEUE = "fraud.check.passed.queue";
+
 
     @Bean
     public TopicExchange transactionsExchange() {
@@ -24,15 +29,41 @@ public class RabbitMQConfig {
 
     @Bean
     public Queue transactionInitiatedQueue() {
-        return new Queue(QUEUE, true);
+        return new Queue(TRANSACTION_INITIATED_QUEUE, true);
     }
 
     @Bean
-    public Binding binding(Queue transactionInitiatedQueue, TopicExchange transactionsExchange) {
+    public Binding transactionInitiatedBinding(Queue transactionInitiatedQueue, TopicExchange transactionsExchange) {
         return BindingBuilder
                 .bind(transactionInitiatedQueue)
                 .to(transactionsExchange)
-                .with(ROUTING_KEY);
+                .with(TRANSACTION_INITIATED_KEY);
+    }
+
+    @Bean
+    public Queue fraudCheckFailedQueue() {
+        return new Queue(FRAUD_CHECK_FAILED_QUEUE, true);
+    }
+
+    @Bean
+    public Binding fraudCheckFailedBinding(Queue fraudCheckFailedQueue, TopicExchange transactionsExchange) {
+        return BindingBuilder
+                .bind(fraudCheckFailedQueue)
+                .to(transactionsExchange)
+                .with(FRAUD_CHECK_FAILED_KEY);
+    }
+
+    @Bean
+    public Queue fraudCheckPassedQueue() {
+        return new Queue(FRAUD_CHECK_PASSED_QUEUE, true);
+    }
+
+    @Bean
+    public Binding fraudCheckPassedBinding(Queue fraudCheckPassedQueue, TopicExchange transactionsExchange) {
+        return BindingBuilder
+                .bind(fraudCheckPassedQueue)
+                .to(transactionsExchange)
+                .with(FRAUD_CHECK_PASSED_KEY);
     }
 
     @Bean
