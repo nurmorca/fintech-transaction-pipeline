@@ -29,7 +29,7 @@ public class FraudCheckConsumer {
     public void handleTransactionInitiated(TransactionInitiatedEvent event) {
         log.info("Fraud check received for transaction {}", event.transactionId());
 
-        boolean flagged = event.amount().compareTo(new BigDecimal("10000")) > 0;
+        boolean flagged = event.amount().compareTo(new BigDecimal("10000")) > 0; // mocking this for demo purposes
 
         Transaction transaction = transactionRepository.findById(event.transactionId()).orElseThrow();
 

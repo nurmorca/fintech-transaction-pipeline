@@ -2,6 +2,7 @@ package com.fpt.code.data;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -16,6 +17,8 @@ public class Transaction {
     public static final String STATUS_PENDING = "PENDING";
     public static final String STATUS_FRAUD_FLAGGED = "FRAUD_FLAGGED";
     public static final String STATUS_FRAUD_CHECK_PASSED = "FRAUD_CHECK_PASSED";
+    public static final String STATUS_DECLINED = "DECLINED";
+    public static final String STATUS_SETTLED = "SETTLED";
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,4 +33,8 @@ public class Transaction {
     private String status;
     @Column(updatable = false, nullable = false)
     private Timestamp createdAt;
+
+    @OneToMany(mappedBy = "transaction", fetch = FetchType.LAZY)
+    private List<LedgerEntry> entries;
+
 }
