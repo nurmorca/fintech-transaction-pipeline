@@ -1,5 +1,6 @@
 package com.fpt.code.config;
 
+import com.rabbitmq.client.AMQP;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.Queue;
@@ -20,6 +21,9 @@ public class RabbitMQConfig {
     public static final String FRAUD_CHECK_FAILED_QUEUE = "fraud.check.failed.queue";
     public static final String FRAUD_CHECK_PASSED_KEY = "fraud.check.passed";
     public static final String FRAUD_CHECK_PASSED_QUEUE = "fraud.check.passed.queue";
+    public static final String NOTIFICATION_QUEUE = "notification.queue";
+    public static final String TRANSACTION_SETTLED_KEY = "transaction.settled";
+    public static final String TRANSACTION_DECLINED_KEY = "transaction.declined";
 
 
     @Bean
@@ -65,6 +69,20 @@ public class RabbitMQConfig {
                 .to(transactionsExchange)
                 .with(FRAUD_CHECK_PASSED_KEY);
     }
+
+    @Bean
+    public Queue notificationsQueue() {return new Queue(NOTIFICATION_QUEUE, true);}
+
+    @Bean
+    public Binding transactionDeclinedBinding(Queue notificationsQueue, TopicExchange transactionsExchange) {
+        return BindingBuilder.bind(notificationsQueue).to(transactionsExchange).with(TRANSACTION_DECLINED_KEY);
+    }
+
+    @Bean
+    public Binding transactionSettledBinding(Queue notificationsQueue, TopicExchange transactionsExchange) {
+        return BindingBuilder.bind(notificationsQueue).to(transactionsExchange).with(TRANSACTION_SETTLED_KEY);
+    }
+
 
     @Bean
     public MessageConverter jsonMessageConverter() {

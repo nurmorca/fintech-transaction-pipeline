@@ -1,9 +1,11 @@
 package com.fpt.code.consumer;
 
 import com.fpt.code.config.RabbitMQConfig;
+import com.fpt.code.data.AuditLog;
 import com.fpt.code.data.LedgerEntry;
 import com.fpt.code.data.Transaction;
-import com.fpt.code.data.TransactionInitiatedEvent;
+import com.fpt.code.data.record.TransactionInitiatedEvent;
+import com.fpt.code.repository.AuditLogRepository;
 import com.fpt.code.repository.LedgerEntryRepository;
 import com.fpt.code.repository.TransactionRepository;
 import jakarta.transaction.Transactional;
@@ -24,12 +26,14 @@ public class LedgerConsumer {
     private final RabbitTemplate rabbitTemplate;
     private final TransactionRepository transactionRepository;
     private final LedgerEntryRepository ledgerEntryRepository;
+    private final AuditLogRepository auditLogRepository;
 
     @Autowired
-    public LedgerConsumer(RabbitTemplate template, TransactionRepository transactionRepo, LedgerEntryRepository ledgerRepo) {
+    public LedgerConsumer(RabbitTemplate template, TransactionRepository transactionRepo, LedgerEntryRepository ledgerRepo, AuditLogRepository auditLogRepository) {
         this.rabbitTemplate = template;
         this.transactionRepository = transactionRepo;
         this.ledgerEntryRepository = ledgerRepo;
+        this.auditLogRepository = auditLogRepository;
     }
 
     @RabbitListener(queues = RabbitMQConfig.FRAUD_CHECK_FAILED_QUEUE)
@@ -63,6 +67,13 @@ public class LedgerConsumer {
             ledgerEntryRepository.save(reverseDebit);
             ledgerEntryRepository.save(reverseCredit);
         }
+        rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.TRANSACTION_DECLINED_KEY, event);
+        AuditLog log = new AuditLog();
+        log.setTransactionId(transaction.getId());
+        log.setEvent(RabbitMQConfig.TRANSACTION_DECLINED_KEY);
+        log.setDetails("Amount: " + transaction.getAmount());
+        log.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
+        auditLogRepository.save(log);
     }
 
     @RabbitListener(queues = RabbitMQConfig.FRAUD_CHECK_PASSED_QUEUE)
@@ -92,6 +103,13 @@ public class LedgerConsumer {
             ledgerEntryRepository.save(debit);
             ledgerEntryRepository.save(credit);
             transactionRepository.save(transaction);
+            rabbitTemplate.convertAndSend(RabbitMQConfig.EXCHANGE, RabbitMQConfig.TRANSACTION_SETTLED_KEY, event);
+            AuditLog log = new AuditLog();
+            log.setTransactionId(transaction.getId());
+            log.setEvent(RabbitMQConfig.TRANSACTION_SETTLED_KEY);
+            log.setDetails("Amount: " + transaction.getAmount());
+            log.setCreatedAt(Timestamp.valueOf(LocalDateTime.now()));
+            auditLogRepository.save(log);
         } else {
             log.info("Fraud check passed transaction {} is already settled in ledger, skipped", event.transactionId());
         }

@@ -1,4 +1,4 @@
-package com.fpt.code.data;
+package com.fpt.code.data.record;
 
 import java.math.BigDecimal;
 

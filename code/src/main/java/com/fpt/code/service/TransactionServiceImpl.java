@@ -2,7 +2,7 @@ package com.fpt.code.service;
 
 import com.fpt.code.config.RabbitMQConfig;
 import com.fpt.code.data.Transaction;
-import com.fpt.code.data.TransactionInitiatedEvent;
+import com.fpt.code.data.record.TransactionInitiatedEvent;
 import com.fpt.code.data.dto.TransactionRequest;
 import com.fpt.code.repository.TransactionRepository;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
